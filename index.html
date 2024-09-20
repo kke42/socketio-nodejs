@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Communication with Socket.IO</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        ul { list-style-type: none; padding: 0; }
+        li { padding: 8px; margin-bottom: 5px; background-color: #f3f3f3; }
+    </style>
+</head>
+<body>
+    <h1>Real-Time Chat</h1>
+    <form id="nameForm">
+        <input type="text" id="nameInput" placeholder="Enter your name" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <h2 id="greeting"></h2>
+    <form id="messageForm">
+        <input type="text" id="messageInput" placeholder="Type a message..." required>
+        <button type="submit">Send</button>
+    </form>
+
+    <ul id="messages"></ul>
+
+    <!-- Include Socket.IO client script -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        // Handle name submission
+        const nameForm = document.getElementById('nameForm');
+        const nameInput = document.getElementById('nameInput');
+        const greeting = document.getElementById('greeting');
+
+        nameForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const name = nameInput.value;
+            // Emit 'submit name' event to the server
+            socket.emit('submit name', name);
+            nameInput.value = '';
+        });
+
+        // Listen for greeting from server
+        socket.on('greet user', function(message) {
+            greeting.textContent = message;
+        });
+
+        // Listen for new user notifications
+        socket.on('new user', function(message) {
+            const li = document.createElement('li');
+            li.textContent = message;
+            document.getElementById('messages').appendChild(li);
+        });
+
+        // Handle chat message submission
+        const messageForm = document.getElementById('messageForm');
+        const messageInput = document.getElementById('messageInput');
+
+        messageForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const message = messageInput.value;
+            // Emit 'chat message' event to the server
+            socket.emit('chat message', message);
+            messageInput.value = '';
+        });
+
+        // Listen for chat messages
+        socket.on('chat message', function(msg) {
+            const li = document.createElement('li');
+            li.textContent = msg; // Display message with username
+            document.getElementById('messages').appendChild(li);
+        });
+
+        // Listen for user left notifications
+        socket.on('user left', function(message) {
+            const li = document.createElement('li');
+            li.textContent = message;
+            li.style.color = 'red'; // Optional: different color for user left messages
+            document.getElementById('messages').appendChild(li);
+        });
+    </script>
+</body>
+</html>
